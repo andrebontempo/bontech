@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mariadb:11.3
+    container_name: ${MYSQL_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./data/db:/var/lib/mysql
+    networks:
+      - proxy
+
+  wordpress:
+    image: wordpress:php8.2-apache
+    container_name: ${WORDPRESS_CONTAINER_NAME}
+    depends_on:
+      - db
+    restart: unless-stopped
+    environment:
+      WORDPRESS_DB_HOST: ${MYSQL_CONTAINER_NAME}:3306
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
+    volumes:
+      - ./data/wordpress:/var/www/html
+    networks:
+      - proxy
+#    ports:
+#      - "8080:80"
+networks:
+  proxy:
+    external: true
