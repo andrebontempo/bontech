@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>{{ site_setting.maintenance_title if site_setting else 'Manutenção Programada — Bontech' }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #061021 0%, #0A1931 55%, #003E99 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .maint-card {
+      max-width: 580px;
+      background: rgba(15, 37, 71, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 18px;
+      padding: 44px 36px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    }
+    .badge {
+      display: inline-block;
+      background: #0066FF;
+      color: #FFF;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+    h1 { font-size: 28px; margin: 0 0 14px; }
+    p { color: #CBD5E1; line-height: 1.6; margin-bottom: 22px; }
+    .btn {
+      display: inline-block;
+      background: #10B981;
+      color: #FFF;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <div class="maint-card">
+    <span class="badge">MANUTENÇÃO PROGRAMADA • HTTP 503</span>
+    <h1>{{ site_setting.maintenance_title if site_setting else 'Estamos atualizando nossa plataforma' }}</h1>
+    <p>{{ site_setting.maintenance_message if site_setting else 'Estamos aplicando melhorias em nossos serviços. Voltaremos em instantes!' }}</p>
+    {% if site_setting and site_setting.maintenance_eta %}
+    <p style="font-size:14px;color:#38BDF8;font-weight:700;">Previsão de retorno: {{ site_setting.maintenance_eta }}</p>
+    {% endif %}
+    <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="https://wa.me/{{ site_setting.whatsapp_number if site_setting else '5561984274022' }}" class="btn">Atendimento via WhatsApp</a>
+      <a href="{{ url_for('auth.login') }}" style="color:#93C5FD;font-size:13px;align-self:center;text-decoration:underline;">Acesso Administrativo</a>
+    </div>
+  </div>
+</body>
+</html>

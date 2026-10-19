@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Política de Privacidade & LGPD — Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container">
+    <h1>Política de Privacidade e Proteção de Dados (LGPD)</h1>
+    <p>Compromisso da Bontech com a segurança da informação, transparência e conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="card-panel article-content" style="max-width:900px;margin:0 auto;">
+      <h2>1. Coleta e Finalidade dos Dados</h2>
+      <p>A <strong>Bontech TI & Governança</strong> coleta apenas os dados estritamente necessários para a prestação de serviços de consultoria, resposta a solicitações comerciais e autenticação segura no Portal do Cliente (tais como nome, endereço de e-mail corporativo, telefone/WhatsApp e nome da empresa).</p>
+
+      <h2>2. Autenticação Local e Login Social (Google OAuth 2.0)</h2>
+      <p>Ao optar por autenticar-se com sua conta Google, recebemos exclusivamente seu identificador único, nome de exibição, endereço de e-mail verificado e foto de perfil pública, sem acesso à sua senha pessoal do Google.</p>
+
+      <h2>3. Compartilhamento e Segurança</h2>
+      <p>Não comercializamos nem compartilhamos dados pessoais com terceiros para fins publicitários. Todas as comunicações entre seu navegador e nossos servidores são criptografadas via HTTPS/TLS, e senhas locais são armazenadas utilizando algoritmos modernos de hash criptográfico.</p>
+
+      <h2>4. Direitos do Titular</h2>
+      <p>Você pode solicitar a atualização, exportação ou exclusão definitiva da sua conta e histórico de solicitações a qualquer momento entrando em contato pelo e-mail <strong>{{ site_setting.contact_email if site_setting else 'suporte@bontech.com.br' }}</strong>.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

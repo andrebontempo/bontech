@@ -1,36 +1,56 @@
 services:
   db:
-    image: mariadb:11.3
-    container_name: ${MYSQL_CONTAINER_NAME}
+    image: postgres:16-alpine
+    container_name: bontech-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-bontech}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bontech_secret_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-bontech}
     volumes:
-      - ./data/db:/var/lib/mysql
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-bontech} -d $${POSTGRES_DB:-bontech}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
+      - app-network
       - proxy
 
-  wordpress:
-    image: wordpress:php8.2-apache
-    container_name: ${WORDPRESS_CONTAINER_NAME}
-    depends_on:
-      - db
+  app:
+    build: .
+    container_name: bontech-app
     restart: unless-stopped
+    ports:
+      - "${APP_PORT:-5015}:80"
+    env_file:
+      - .env
     environment:
-      WORDPRESS_DB_HOST: ${MYSQL_CONTAINER_NAME}:3306
-      WORDPRESS_DB_USER: ${MYSQL_USER}
-      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
-      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
+      - PORT=80
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bontech}:${POSTGRES_PASSWORD:-bontech_secret_2026}@db:5432/${POSTGRES_DB:-bontech}
     volumes:
-      - ./data/wordpress:/var/www/html
+      - uploads_data:/usr/src/app/app/static/uploads
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
-      - proxy
-#    ports:
-#      - "8080:80"
+      app-network:
+      proxy:
+        aliases:
+          - bontech
+          - bontech-app
+          - bontech_wordpress
+          - wordpress
+          - bontech_nginx
+
+volumes:
+  pg_data:
+  uploads_data:
+
 networks:
+  app-network:
+    driver: bridge
   proxy:
     external: true

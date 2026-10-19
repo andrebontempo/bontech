@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Blog & Publicações Técnicas — Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container">
+    <h1>Nosso Blog & Base de Conhecimento</h1>
+    <p>Artigos técnicos sobre Help Desk (GLPi), Automação com n8n, Gestão de Incidentes, Ativos de TI (ITAM) e KCS.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <!-- Filtro de Categorias e Busca -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:36px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{{ url_for('blog.index') }}" class="admin-tab-link {% if not active_category %}active{% endif %}">Todas as Publicações</a>
+        {% for cat in categories %}
+        <a href="{{ url_for('blog.index', categoria=cat.slug) }}" class="admin-tab-link {% if active_category and active_category.id == cat.id %}active{% endif %}">
+          {{ cat.name }}
+        </a>
+        {% endfor %}
+      </div>
+
+      <form action="{{ url_for('blog.index') }}" method="GET" style="display:flex;gap:8px;">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar no blog..." style="min-width:220px;">
+        <button type="submit" class="btn-primary">Filtrar</button>
+      </form>
+    </div>
+
+    {% if posts %}
+    <div class="blog-grid">
+      {% for post in posts %}
+      <article class="blog-card">
+        <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="blog-card-thumb">
+          <img src="{{ post.cover_image or url_for('static', filename='img/blog-glpi.svg') }}" alt="{{ post.title }}">
+          <span class="blog-cat-badge">📁 {{ post.category.name if post.category else 'Governança' }}</span>
+        </a>
+        <div class="blog-card-body">
+          <div class="blog-meta">
+            <span>👤 {{ post.author.name if post.author else 'admin' }}</span>
+            <span>📅 {{ post.published_at.strftime('%d/%m/%Y') }}</span>
+            <span>⏱️ {{ post.reading_time }} min</span>
+          </div>
+          <h3 class="blog-card-title"><a href="{{ url_for('blog.post_detail', slug=post.slug) }}">{{ post.title }}</a></h3>
+          <p class="blog-card-summary">{{ post.summary }}</p>
+          <div>
+            <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="btn-cta-pill">
+              <span>Leia mais...</span>
+              <span class="arrow-circle">→</span>
+            </a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card-panel" style="text-align:center;padding:48px;">
+      <h3>Nenhuma publicação encontrada neste filtro.</h3>
+      <a href="{{ url_for('blog.index') }}" class="btn-primary" style="margin-top:16px;">Ver todos os artigos</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Minha Conta & Solicitações — Portal Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;text-align:left;">
+    <div>
+      <span class="section-pill" style="background:rgba(255,255,255,0.16);color:#38BDF8;">Portal do Cliente</span>
+      <h1>Olá, {{ current_user.name }}!</h1>
+      <p style="margin:0;">Acompanhe suas solicitações de orçamento, diagnósticos técnicos e consultorias na Bontech.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('auth.logout') }}" class="btn-outline-light">Sair da Conta</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:32px;align-items:start;">
+    <!-- Coluna Principal: Minhas Solicitações -->
+    <div style="grid-column: span 2;display:flex;flex-direction:column;gap:28px;">
+      <div class="card-panel">
+        <h2 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">📋 Minhas Solicitações de Consultoria ({{ consultations|length }})</h2>
+
+        {% if consultations %}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          {% for req in consultations %}
+          <div style="border:1px solid var(--slate-200);border-radius:12px;padding:20px;background:var(--slate-50);">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+              <div>
+                <span style="font-weight:800;color:var(--royal-700);font-size:15px;">Protocolo: {{ req.protocol }}</span>
+                <span style="color:var(--slate-500);font-size:13px;margin-left:8px;">• {{ req.created_at.strftime('%d/%m/%Y às %H:%M') }}</span>
+              </div>
+              <span class="status-badge status-{{ req.status | replace(' ', '-') | replace('á', 'a') | replace('í', 'i') }}">
+                {{ req.status }}
+              </span>
+            </div>
+
+            <p style="font-weight:700;color:var(--navy-900);margin-bottom:6px;">
+              {{ req.service_interest }} — {{ req.subject }}
+            </p>
+            <p style="font-size:14px;color:var(--slate-700);white-space:pre-line;">{{ req.message }}</p>
+
+            {% if req.admin_response %}
+            <div style="margin-top:14px;padding:14px 16px;background:#EFF6FF;border-left:4px solid var(--royal-600);border-radius:6px;">
+              <strong style="font-size:13px;color:var(--royal-700);">💬 Resposta / Parecer da Equipe Bontech:</strong>
+              <p style="font-size:14px;color:var(--navy-900);margin-top:4px;white-space:pre-line;">{{ req.admin_response }}</p>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--slate-600);font-size:14.5px;">Você ainda não abriu nenhuma solicitação de consultoria. Utilize o formulário abaixo para iniciar um novo atendimento.</p>
+        {% endif %}
+      </div>
+
+      <!-- Abrir Nova Solicitação -->
+      <div class="card-panel">
+        <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:14px;">➕ Nova Solicitação de Consultoria / Diagnóstico</h3>
+        <form method="POST" action="{{ url_for('client.create_consultation') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+            <div class="form-group">
+              <label class="form-label">Serviço Desejado *</label>
+              <select name="service_interest" class="form-control" required>
+                {% for srv in services %}
+                <option value="{{ srv.title }}">{{ srv.title }}</option>
+                {% endfor %}
+                <option value="Consultoria Geral em Governança de TI">Consultoria Geral em Governança de TI</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Assunto *</label>
+              <input type="text" name="subject" class="form-control" required placeholder="Resumo da demanda">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Detalhamento da Demanda *</label>
+            <textarea name="message" rows="4" class="form-control" required placeholder="Descreva como nossa equipe pode apoiar seu projeto..."></textarea>
+          </div>
+          <button type="submit" class="btn-cta-pill">
+            <span>Registrar Solicitação</span>
+            <span class="arrow-circle">→</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Coluna Lateral: Meus Dados -->
+    <aside class="card-panel">
+      <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">👤 Meus Dados Cadastrais</h3>
+      <form method="POST" action="{{ url_for('client.update_profile') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label">Nome</label>
+          <input type="text" name="name" value="{{ current_user.name }}" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">E-mail (Login)</label>
+          <input type="email" value="{{ current_user.email }}" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefone / WhatsApp</label>
+          <input type="text" name="phone" value="{{ current_user.phone or '' }}" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Empresa / Órgão</label>
+          <input type="text" name="company" value="{{ current_user.company or '' }}" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alterar Senha (opcional)</label>
+          <input type="password" name="new_password" class="form-control" placeholder="Deixe em branco para manter">
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;">Salvar Alterações</button>
+      </form>
+    </aside>
+  </div>
+</section>
+{% endblock %}

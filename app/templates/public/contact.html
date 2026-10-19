@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Entre em Contato & Solicite Consultoria — Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container">
+    <h1>Fale com um Especialista Bontech</h1>
+    <p>Solicite um diagnóstico para implantação de GLPi, Automação em n8n ou Consultoria em Gestão de Incidentes, Ativos (ITAM), Conhecimento (KCS) e Central de Serviços.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:36px;">
+    <div class="card-panel" style="grid-column: span 2;">
+      <h2 style="color:var(--navy-900);font-weight:800;margin-bottom:6px;">Abrir Solicitação de Consultoria / Orçamento</h2>
+      <p style="color:var(--slate-600);font-size:14px;margin-bottom:24px;">
+        Ao enviar este formulário, um protocolo de atendimento será gerado automaticamente e você poderá acompanhar nossa resposta no Portal do Cliente.
+      </p>
+
+      <form method="POST" action="{{ url_for('public.contact') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <!-- Honeypot invisível contra bots -->
+        <div style="display:none;" aria-hidden="true">
+          <input type="text" name="website_url" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Nome Completo *</label>
+            <input type="text" name="name" class="form-control" required value="{{ current_user.name if current_user.is_authenticated else '' }}" placeholder="Seu nome">
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-mail Corporativo *</label>
+            <input type="email" name="email" class="form-control" required value="{{ current_user.email if current_user.is_authenticated else '' }}" placeholder="voce@empresa.com.br">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Telefone / WhatsApp *</label>
+            <input type="text" name="phone" class="form-control" required value="{{ current_user.phone if current_user.is_authenticated and current_user.phone else '' }}" placeholder="(61) 99999-9999">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Empresa / Órgão</label>
+            <input type="text" name="company" class="form-control" value="{{ current_user.company if current_user.is_authenticated and current_user.company else '' }}" placeholder="Nome da sua organização">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Serviço de Interesse *</label>
+            <select name="service_interest" class="form-control" required>
+              {% for srv in services %}
+              <option value="{{ srv.title }}" {% if preselected_service == srv.title %}selected{% endif %}>{{ srv.title }}</option>
+              {% endfor %}
+              <option value="Consultoria Completa em Governança de TI">Consultoria Completa em Governança de TI</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assunto Resumido</label>
+            <input type="text" name="subject" class="form-control" placeholder="Ex.: Implantação de GLPi + Integração WhatsApp n8n">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descreva o cenário ou necessidade da sua TI *</label>
+          <textarea name="message" rows="5" class="form-control" required placeholder="Conte-nos sobre sua operação atual, tamanho da equipe ou desafios com chamados, ativos e automações..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-cta-pill">
+          <span>Enviar Solicitação de Consultoria</span>
+          <span class="arrow-circle">→</span>
+        </button>
+      </form>
+    </div>
+
+    <aside style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card-panel">
+        <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:14px;">Canais Diretos</h3>
+        <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;">
+          Prefere falar imediatamente com nossa equipe técnica em Brasília?
+        </p>
+        <p style="margin-bottom:10px;font-size:14px;"><strong>📧 E-mail:</strong><br>{{ site_setting.contact_email if site_setting else 'suporte@bontech.com.br' }}</p>
+        <p style="margin-bottom:10px;font-size:14px;"><strong>📱 WhatsApp / Telefone:</strong><br>{{ site_setting.contact_phone if site_setting else '+55 61 98427-4022' }}</p>
+        <p style="margin-bottom:18px;font-size:14px;"><strong>📍 Localização:</strong><br>{{ site_setting.address if site_setting else 'Brasília, DF 70299-120' }}</p>
+
+        <a href="https://wa.me/{{ site_setting.whatsapp_number if site_setting else '5561984274022' }}" target="_blank" rel="noopener" class="btn-primary" style="width:100%;background:#10B981;">
+          Chamar no WhatsApp Agora
+        </a>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

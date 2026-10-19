@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ site_setting.site_name if site_setting else 'Bontech' }} — {{ site_setting.site_tagline if site_setting else 'Help Desk, Automação n8n & Governança de TI' }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ site_setting.hero_subtitle if site_setting else 'Plataforma de Help Desk em GLPi, Automação com n8n e Consultoria em Gestão de Incidentes, Ativos (ITAM), Conhecimento (KCS) e Central de Serviços.' }}{% endblock %}">
+  <meta name="theme-color" content="#0052CC">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  {% if is_maintenance_active and current_user.is_authenticated and current_user.is_admin %}
+  <div class="maintenance-preview-banner">
+    ⚠️ <strong>MODO DE MANUTENÇÃO ATIVO (HTTP 503):</strong> Visitantes externos veem a tela de manutenção. Você está navegando em modo de pré-visualização de Administrador.
+    <a href="{{ url_for('admin.dashboard', tab='configuracoes') }}">Gerenciar Manutenção →</a>
+  </div>
+  {% endif %}
+
+  <!-- TOPBAR SUPERIOR BIPARTIDA -->
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <div class="topbar-left">
+        <a href="mailto:{{ site_setting.contact_email if site_setting else 'suporte@bontech.com.br' }}" class="topbar-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span>{{ site_setting.contact_email if site_setting else 'suporte@bontech.com.br' }}</span>
+        </a>
+        <a href="https://wa.me/{{ site_setting.whatsapp_number if site_setting else '5561984274022' }}" target="_blank" rel="noopener" class="topbar-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>{{ site_setting.contact_phone if site_setting else '+55 61 98427-4022' }}</span>
+        </a>
+      </div>
+
+      <div class="topbar-right">
+        <span class="topbar-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>{{ site_setting.address if site_setting else 'Brasília, DF 70299-120' }}</span>
+        </span>
+        <div class="topbar-socials">
+          <a href="https://wa.me/{{ site_setting.whatsapp_number if site_setting else '5561984274022' }}" target="_blank" rel="noopener" class="topbar-social-btn" title="WhatsApp">W</a>
+          {% if site_setting and site_setting.linkedin_url %}
+          <a href="{{ site_setting.linkedin_url }}" target="_blank" rel="noopener" class="topbar-social-btn" title="LinkedIn">in</a>
+          {% endif %}
+          {% if site_setting and site_setting.instagram_url %}
+          <a href="{{ site_setting.instagram_url }}" target="_blank" rel="noopener" class="topbar-social-btn" title="Instagram">IG</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR PRINCIPAL -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="{{ url_for('public.index') }}" class="brand-logo">
+        <div class="brand-logo-title"><span class="b-letter">B</span>onTech</div>
+        <span class="brand-logo-sub">{{ site_setting.site_tagline if site_setting else 'Help Desk e Automações em TI' }}</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="{{ url_for('public.index') }}" class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">Home</a></li>
+        <li><a href="{{ url_for('public.services_list') }}" class="nav-link {% if request.endpoint and 'service' in request.endpoint %}active{% endif %}">Serviços</a></li>
+        <li><a href="{{ url_for('blog.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('blog.') %}active{% endif %}">Blog</a></li>
+        <li><a href="{{ url_for('public.privacy') }}" class="nav-link {% if request.endpoint == 'public.privacy' %}active{% endif %}">Política de privacidade</a></li>
+        <li><a href="{{ url_for('public.contact') }}" class="nav-link {% if request.endpoint == 'public.contact' %}active{% endif %}">Contato</a></li>
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}
+          <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin.') %}active{% endif %}">Painel Admin</a></li>
+          {% else %}
+          <li><a href="{{ url_for('client.dashboard') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('client.') %}active{% endif %}">Minha Conta</a></li>
+          {% endif %}
+        {% endif %}
+      </ul>
+
+      <div class="nav-actions">
+        <button type="button" class="icon-circle-btn" id="openSearchModal" title="Pesquisar no site">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('admin.dashboard') if current_user.is_admin else url_for('client.dashboard') }}" class="icon-circle-btn" title="Acessar Painel ({{ current_user.name }})">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="icon-circle-btn" title="Entrar / Cadastrar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        {% endif %}
+
+        <a href="{{ url_for('public.contact') }}" class="btn-cta-pill">
+          <span>Entre em contato</span>
+          <span class="arrow-circle">→</span>
+        </a>
+
+        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MENSAGENS FLASH -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        <span>{{ message }}</span>
+        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;font-weight:800;cursor:pointer;color:inherit;">✕</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- RODAPÉ CORPORATIVO AZUL ROYAL (Fiel ao modelo de referência) -->
+  <footer class="site-footer">
+    <div class="container">
+      <!-- 4 Cards Superiores de Atendimento -->
+      <div class="footer-top-cards">
+        <div class="footer-info-box">
+          <div class="footer-info-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+          <div>
+            <h4>E-mail Corporativo 24/7</h4>
+            <p>{{ site_setting.contact_email if site_setting else 'suporte@bontech.com.br' }}</p>
+          </div>
+        </div>
+
+        <div class="footer-info-box">
+          <div class="footer-info-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div>
+            <h4>Dúvidas ou Diagnóstico?</h4>
+            <p><a href="{{ url_for('public.contact') }}" style="color:#38BDF8;font-weight:700;">Solicite uma Consultoria</a></p>
+          </div>
+        </div>
+
+        <div class="footer-info-box">
+          <div class="footer-info-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div>
+            <h4>Atendimento & WhatsApp</h4>
+            <p>{{ site_setting.contact_phone if site_setting else '+55 61 98427-4022' }}</p>
+          </div>
+        </div>
+
+        <div class="footer-info-box">
+          <div class="footer-info-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <h4>Horário de Operação</h4>
+            <p>{{ site_setting.opening_hours if site_setting else 'Seg-Sáb: 08h às 18h' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Colunas Principais do Rodapé -->
+      <div class="footer-columns">
+        <div class="footer-col">
+          <h3><span>B</span>ontech Governança</h3>
+          <div class="footer-divider"></div>
+          <p>Especialistas em implantação de Central de Serviços (GLPi), Automação de Processos com n8n e Consultoria em Gestão de Incidentes, Ativos (ITAM) e Conhecimento (KCS).</p>
+          <p style="margin-bottom:4px;">📍 {{ site_setting.address if site_setting else 'Brasília, DF 70299-120' }}</p>
+          <p style="margin-bottom:4px;">✉️ {{ site_setting.contact_email if site_setting else 'suporte@bontech.com.br' }}</p>
+          <p>📞 {{ site_setting.contact_phone if site_setting else '+55 61 98427-4022' }}</p>
+        </div>
+
+        <div class="footer-col">
+          <h3><span>N</span>ossos Serviços</h3>
+          <div class="footer-divider"></div>
+          <ul class="footer-list">
+            {% for srv in footer_services %}
+            <li><a href="{{ url_for('public.service_detail', slug=srv.slug) }}">→ {{ srv.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h3><span>C</span>ategorias & Links</h3>
+          <div class="footer-divider"></div>
+          <ul class="footer-list">
+            {% for cat in footer_categories %}
+            <li><a href="{{ url_for('blog.index', categoria=cat.slug) }}">→ {{ cat.name }}</a></li>
+            {% endfor %}
+            <li><a href="{{ url_for('public.privacy') }}">→ Política de Privacidade</a></li>
+            <li><a href="{{ url_for('auth.login') }}">→ Área do Cliente / Login</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h3><span>P</span>esquisar no Portal</h3>
+          <div class="footer-divider"></div>
+          <p>Busque artigos técnicos sobre GLPi, workflows em n8n, ITAM, KCS ou nossos serviços de consultoria:</p>
+          <form action="{{ url_for('public.search') }}" method="GET" class="footer-search-form">
+            <input type="text" name="q" placeholder="Pesquisar..." required>
+            <button type="submit" aria-label="Buscar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        Copyright © {{ current_year }} <strong>Bontech TI & Governança</strong>. Desenvolvido por <a href="https://bontech.com.br">André Bontempo</a> • Stack Python (Flask) & PostgreSQL.
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE BUSCA INSTANTÂNEA -->
+  <div class="search-modal-backdrop" id="searchModal">
+    <div class="search-modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="color:var(--navy-900);font-weight:800;">Pesquisar na Bontech</h3>
+        <button type="button" id="closeSearchModal" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate-500);">✕</button>
+      </div>
+      <form action="{{ url_for('public.search') }}" method="GET" style="display:flex;gap:10px;">
+        <input type="text" name="q" id="searchModalInput" class="form-control" placeholder="Digite GLPi, n8n, Ativos, KCS, Incidentes..." required>
+        <button type="submit" class="btn-primary">Buscar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

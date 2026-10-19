@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none">
+  <rect width="800" height="500" fill="url(#bg2)"/>
+  <g opacity="0.15" stroke="#60A5FA" stroke-dasharray="6 6">
+    <circle cx="400" cy="250" r="190"/>
+    <circle cx="400" cy="250" r="120"/>
+  </g>
+  <path d="M210 250 C290 250, 290 160, 370 160" stroke="#38BDF8" stroke-width="4"/>
+  <path d="M210 250 C290 250, 290 340, 370 340" stroke="#10B981" stroke-width="4"/>
+  <path d="M430 160 C510 160, 510 250, 590 250" stroke="#38BDF8" stroke-width="4"/>
+  <path d="M430 340 C510 340, 510 250, 590 250" stroke="#10B981" stroke-width="4"/>
+  <rect x="120" y="205" width="110" height="90" rx="18" fill="#0F2547" stroke="#38BDF8" stroke-width="3"/>
+  <text x="175" y="248" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="15" font-weight="bold">Webhook</text>
+  <text x="175" y="268" text-anchor="middle" fill="#38BDF8" font-family="sans-serif" font-size="12">WhatsApp / API</text>
+  <rect x="340" y="115" width="120" height="90" rx="18" fill="#0052CC" stroke="#93C5FD" stroke-width="3"/>
+  <text x="400" y="158" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">n8n Engine</text>
+  <text x="400" y="178" text-anchor="middle" fill="#DBEAFE" font-family="sans-serif" font-size="12">Agente IA + Regras</text>
+  <rect x="340" y="295" width="120" height="90" rx="18" fill="#0F2547" stroke="#10B981" stroke-width="3"/>
+  <text x="400" y="338" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold">GLPi / ERP</text>
+  <text x="400" y="358" text-anchor="middle" fill="#6EE7B7" font-family="sans-serif" font-size="12">Integração REST</text>
+  <rect x="570" y="205" width="120" height="90" rx="18" fill="#065F46" stroke="#34D399" stroke-width="3"/>
+  <text x="630" y="248" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="15" font-weight="bold">Resolvido</text>
+  <text x="630" y="268" text-anchor="middle" fill="#A7F3D0" font-family="sans-serif" font-size="12">Zero Intervenção</text>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#091526"/>
+      <stop offset="1" stop-color="#0F294A"/>
+    </linearGradient>
+  </defs>
+</svg>

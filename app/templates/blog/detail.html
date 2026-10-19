@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} — Blog Bontech{% endblock %}
+{% block meta_description %}{{ post.summary }}{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container">
+    <span class="section-pill" style="background:rgba(255,255,255,0.16);color:#38BDF8;">
+      {{ post.category.name if post.category else 'Governança de TI' }}
+    </span>
+    <h1 style="max-width:860px;margin:0 auto 12px;">{{ post.title }}</h1>
+    <p style="font-size:14px;">
+      Por <strong>{{ post.author.name if post.author else 'André Bontempo' }}</strong> • Publicado em {{ post.published_at.strftime('%d/%m/%Y') }} • {{ post.reading_time }} min de leitura • {{ post.views }} visualizações
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:36px;align-items:start;">
+    <article class="card-panel" style="grid-column: span 2;">
+      <div style="border-radius:12px;overflow:hidden;margin-bottom:28px;background:var(--navy-900);max-height:360px;">
+        <img src="{{ post.cover_image or url_for('static', filename='img/blog-glpi.svg') }}" alt="{{ post.title }}" style="width:100%;height:340px;object-fit:cover;">
+      </div>
+
+      <div class="article-content">
+        {{ html_content | safe }}
+      </div>
+
+      {% if post.tag_list %}
+      <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--slate-200);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <strong style="font-size:13px;color:var(--slate-600);">Tags:</strong>
+        {% for tag in post.tag_list %}
+        <a href="{{ url_for('blog.index', q=tag) }}" style="background:var(--royal-50);color:var(--royal-600);padding:4px 12px;border-radius:999px;font-size:12.5px;font-weight:700;">#{{ tag }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </article>
+
+    <aside style="display:flex;flex-direction:column;gap:24px;">
+      <div class="card-panel" style="background:linear-gradient(145deg,var(--navy-900),var(--royal-700));color:#FFF;">
+        <h3 style="font-size:19px;font-weight:800;margin-bottom:10px;">Precisa de apoio especializado?</h3>
+        <p style="font-size:14px;color:#DBEAFE;margin-bottom:18px;">
+          A Bontech implanta e automatiza ambientes GLPi, workflows em n8n, ITAM e KCS sob medida para sua organização.
+        </p>
+        <a href="{{ url_for('public.contact') }}" class="btn-cta-pill" style="background:#FFF;color:var(--royal-700);width:100%;justify-content:center;">
+          <span>Falar com Consultor</span>
+          <span class="arrow-circle" style="background:var(--royal-500);color:#FFF;">→</span>
+        </a>
+      </div>
+
+      {% if related_posts %}
+      <div class="card-panel">
+        <h4 style="color:var(--navy-900);font-weight:800;margin-bottom:14px;">Outras Publicações</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;">
+          {% for rel in related_posts %}
+          <li>
+            <a href="{{ url_for('blog.post_detail', slug=rel.slug) }}" style="display:block;padding:10px 12px;border-radius:8px;background:var(--slate-50);font-weight:700;font-size:13.5px;color:var(--royal-700);">
+              {{ rel.title }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+{% endblock %}

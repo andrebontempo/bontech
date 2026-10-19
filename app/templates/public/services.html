@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Nossos Serviços de TI & Governança — Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container">
+    <h1>Portfólio de Soluções & Consultoria</h1>
+    <p>Help Desk em GLPi, Automação Inteligente com n8n e Consultoria Completa em Gestão de Incidentes, Ativos (ITAM), Conhecimento (KCS) e Central de Serviços.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="services-grid">
+      {% for service in services %}
+      <article class="service-card">
+        <div class="service-card-thumb">
+          <img src="{{ service.cover_image or url_for('static', filename='img/service-glpi.svg') }}" alt="{{ service.title }}">
+          {% if service.badge %}
+          <span class="service-card-badge">{{ service.badge }}</span>
+          {% endif %}
+        </div>
+        <div class="service-icon-floating">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="service-card-body">
+          <h3 class="service-card-title">
+            <a href="{{ url_for('public.service_detail', slug=service.slug) }}">{{ service.title }}</a>
+          </h3>
+          <p class="service-card-text">{{ service.short_description }}</p>
+          <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+            <a href="{{ url_for('public.service_detail', slug=service.slug) }}" class="btn-cta-pill">
+              <span>Ver Detalhes</span>
+              <span class="arrow-circle">→</span>
+            </a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

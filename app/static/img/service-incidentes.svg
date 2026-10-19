@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none">
+  <rect width="800" height="500" fill="#0A1931"/>
+  <circle cx="400" cy="250" r="160" fill="#0F2547" stroke="#0052CC" stroke-width="3"/>
+  <path d="M400 130 L495 175 V255 C495 320 400 370 400 370 C400 370 305 320 305 255 V175 L400 130 Z" fill="#0052CC" fill-opacity="0.25" stroke="#38BDF8" stroke-width="4"/>
+  <path d="M365 250 L390 275 L440 220" stroke="#10B981" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="400" y="435" text-anchor="middle" fill="#93C5FD" font-family="sans-serif" font-size="18" font-weight="bold">Gestão de Incidentes &amp; Continuidade ITIL</text>
+</svg>

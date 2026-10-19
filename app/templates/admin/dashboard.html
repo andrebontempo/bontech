@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+{% block title %}Painel Administrativo — Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner" style="padding:36px 0;">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;text-align:left;">
+    <div>
+      <span class="section-pill" style="background:rgba(255,255,255,0.16);color:#38BDF8;">Gestão Corporativa</span>
+      <h1 style="font-size:28px;">Painel Administrativo Bontech</h1>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <a href="{{ url_for('public.index') }}" class="btn-outline-light">Ver Site</a>
+      <a href="{{ url_for('auth.logout') }}" class="btn-outline-light">Sair</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:40px;">
+  <div class="container">
+    <!-- Indicadores Principais -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Solicitações / Leads</div>
+        <div class="stat-value">{{ stats.total_consultations }}</div>
+        <div style="font-size:12px;color:var(--emerald);font-weight:700;">{{ stats.open_consultations }} em aberto</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Serviços Ativos</div>
+        <div class="stat-value">{{ stats.total_services }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Artigos no Blog</div>
+        <div class="stat-value">{{ stats.total_posts }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Leituras no Blog</div>
+        <div class="stat-value">{{ stats.total_views }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Usuários Cadastrados</div>
+        <div class="stat-value">{{ stats.total_users }}</div>
+      </div>
+    </div>
+
+    <!-- Abas de Navegação -->
+    <div class="admin-tabs">
+      <a href="{{ url_for('admin.dashboard', tab='visao-geral') }}" class="admin-tab-link {% if tab == 'visao-geral' %}active{% endif %}">📊 Visão Geral</a>
+      <a href="{{ url_for('admin.dashboard', tab='solicitacoes') }}" class="admin-tab-link {% if tab == 'solicitacoes' %}active{% endif %}">📩 Solicitações / CRM ({{ stats.total_consultations }})</a>
+      <a href="{{ url_for('admin.dashboard', tab='servicos') }}" class="admin-tab-link {% if tab == 'servicos' %}active{% endif %}">🛠️ Serviços ({{ stats.total_services }})</a>
+      <a href="{{ url_for('admin.dashboard', tab='blog') }}" class="admin-tab-link {% if tab == 'blog' %}active{% endif %}">📝 Blog & KCS ({{ stats.total_posts }})</a>
+      <a href="{{ url_for('admin.dashboard', tab='usuarios') }}" class="admin-tab-link {% if tab == 'usuarios' %}active{% endif %}">👥 Usuários ({{ stats.total_users }})</a>
+      <a href="{{ url_for('admin.dashboard', tab='configuracoes') }}" class="admin-tab-link {% if tab == 'configuracoes' %}active{% endif %}">⚙️ Configurações & Manutenção 503</a>
+    </div>
+
+    <!-- ABA 1: VISÃO GERAL -->
+    {% if tab == 'visao-geral' %}
+    <div class="card-panel">
+      <h2 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">Últimas Solicitações de Consultoria Recebidas</h2>
+      {% if consultations %}
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        {% for req in consultations[:5] %}
+        <div style="border:1px solid var(--slate-200);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <strong>[{{ req.protocol }}] {{ req.name }}</strong> ({{ req.email }}) — <span style="color:var(--royal-600);font-weight:700;">{{ req.service_interest }}</span>
+            <p style="font-size:13.5px;color:var(--slate-600);margin-top:4px;">{{ req.message[:140] }}...</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="status-badge status-{{ req.status | replace(' ', '-') | replace('á', 'a') | replace('í', 'i') }}">{{ req.status }}</span>
+            <a href="{{ url_for('admin.dashboard', tab='solicitacoes') }}" class="btn-primary" style="padding:8px 14px;font-size:13px;">Atender →</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color:var(--slate-600);">Nenhuma solicitação registrada até o momento.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ABA 2: SOLICITAÇÕES / MINI-CRM -->
+    {% if tab == 'solicitacoes' %}
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      {% for req in consultations %}
+      <div class="card-panel">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+          <div>
+            <span style="font-weight:800;color:var(--royal-700);font-size:16px;">{{ req.protocol }} — {{ req.subject }}</span>
+            <p style="font-size:13.5px;color:var(--slate-600);">
+              👤 <strong>{{ req.name }}</strong> | ✉️ {{ req.email }} | 📱 {{ req.phone or 'S/ Tel' }} | 🏢 {{ req.company or 'S/ Empresa' }} | 📅 {{ req.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            {% if req.phone %}
+            <a href="https://wa.me/55{{ req.phone | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') | replace('+55', '') }}" target="_blank" rel="noopener" class="btn-primary" style="background:#10B981;padding:7px 14px;font-size:12.5px;">WhatsApp</a>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin.delete_consultation', req_id=req.id) }}" onsubmit="return confirm('Excluir esta solicitação?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" style="background:#FEE2E2;color:#991B1B;border:none;padding:7px 12px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12.5px;">Excluir</button>
+            </form>
+          </div>
+        </div>
+
+        <div style="background:var(--slate-50);padding:14px;border-radius:8px;margin-bottom:16px;font-size:14px;white-space:pre-line;">{{ req.message }}</div>
+
+        <form method="POST" action="{{ url_for('admin.respond_consultation', req_id=req.id) }}" style="display:grid;grid-template-columns:220px 1fr auto;gap:12px;align-items:end;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div>
+            <label class="form-label">Status</label>
+            <select name="status" class="form-control">
+              {% for st in ['Novo', 'Em Análise', 'Proposta Enviada', 'Em Andamento', 'Concluído'] %}
+              <option value="{{ st }}" {% if req.status == st %}selected{% endif %}>{{ st }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Resposta / Parecer para o Cliente (envia e-mail e exibe no Portal)</label>
+            <input type="text" name="admin_response" value="{{ req.admin_response or '' }}" class="form-control" placeholder="Escreva o retorno ou link da proposta comercial...">
+          </div>
+          <button type="submit" class="btn-primary">Salvar & Notificar</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="card-panel"><p>Nenhuma solicitação recebida ainda.</p></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ABA 3: SERVIÇOS -->
+    {% if tab == 'servicos' %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:28px;align-items:start;">
+      <div class="card-panel">
+        <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">➕ Cadastrar / Editar Serviço</h3>
+        <form method="POST" action="{{ url_for('admin.save_service') }}" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="service_id" id="edit_service_id">
+
+          <div class="form-group">
+            <label class="form-label">Título do Serviço *</label>
+            <input type="text" name="title" id="edit_service_title" class="form-control" required>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div class="form-group">
+              <label class="form-label">Badge</label>
+              <input type="text" name="badge" id="edit_service_badge" class="form-control" placeholder="Ex: ITSM & GLPi">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ícone</label>
+              <select name="icon_name" id="edit_service_icon" class="form-control">
+                <option value="headset">Headset (Help Desk)</option>
+                <option value="workflow">Workflow (n8n)</option>
+                <option value="shield-alert">Escudo (Incidentes)</option>
+                <option value="cpu">CPU (Ativos ITAM)</option>
+                <option value="book-open">Livro (KCS)</option>
+                <option value="layers">Camadas (CSC)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ordem</label>
+              <input type="number" name="display_order" id="edit_service_order" value="1" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Resumo Curto (Card) *</label>
+            <textarea name="short_description" id="edit_service_short" rows="2" class="form-control" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descrição Completa</label>
+            <textarea name="full_description" id="edit_service_full" rows="4" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Entregáveis (1 por linha)</label>
+            <textarea name="features_list" id="edit_service_features" rows="3" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Benefícios (1 por linha)</label>
+            <textarea name="benefits_list" id="edit_service_benefits" rows="3" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Imagem de Capa (converte p/ WebP)</label>
+            <input type="file" name="cover_image" accept="image/*" class="form-control">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label><input type="checkbox" name="is_active" id="edit_service_active" checked> Serviço Ativo no Site</label>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;">Salvar Serviço</button>
+        </form>
+      </div>
+
+      <div class="card-panel">
+        <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">Serviços Cadastrados</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          {% for srv in services %}
+          <div style="border:1px solid var(--slate-200);border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div>
+              <strong>{{ srv.display_order }}. {{ srv.title }}</strong>
+              <p style="font-size:12.5px;color:var(--slate-600);">{{ srv.short_description[:90] }}...</p>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <a href="{{ url_for('public.service_detail', slug=srv.slug) }}" target="_blank" class="btn-primary" style="padding:6px 10px;font-size:12px;">Ver</a>
+              <form method="POST" action="{{ url_for('admin.delete_service', service_id=srv.id) }}" onsubmit="return confirm('Remover este serviço?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" style="background:#FEE2E2;color:#991B1B;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;">✕</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ABA 4: BLOG & KCS -->
+    {% if tab == 'blog' %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:28px;align-items:start;">
+      <div class="card-panel">
+        <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">✍️ Publicar / Editar Artigo no Blog</h3>
+        <form method="POST" action="{{ url_for('admin.save_post') }}" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-group">
+            <label class="form-label">Título do Artigo *</label>
+            <input type="text" name="title" class="form-control" required placeholder="Ex: Como automatizar alertas do GLPi com n8n">
+          </div>
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Categoria</label>
+              <select name="category_id" class="form-control">
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Leitura (min)</label>
+              <input type="number" name="reading_time" value="4" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Resumo Chamativo *</label>
+            <textarea name="summary" rows="2" class="form-control" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Conteúdo do Artigo (Suporta Markdown) *</label>
+            <textarea name="content" rows="7" class="form-control" required placeholder="Use ## para subtítulos, listas e blocos de código..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags (separadas por vírgula)</label>
+            <input type="text" name="tags" class="form-control" placeholder="GLPi, n8n, ITAM, KCS">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Imagem de Capa (converte p/ WebP)</label>
+            <input type="file" name="cover_image" accept="image/*" class="form-control">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label><input type="checkbox" name="is_published" checked> Publicado imediatamente</label>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;">Publicar Artigo</button>
+        </form>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:24px;">
+        <div class="card-panel">
+          <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:14px;">Artigos Publicados ({{ posts|length }})</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            {% for post in posts %}
+            <div style="border:1px solid var(--slate-200);border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+              <div>
+                <strong>{{ post.title }}</strong>
+                <p style="font-size:12px;color:var(--slate-500);">📁 {{ post.category.name if post.category else 'Geral' }} • 👁️ {{ post.views }} leituras</p>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" target="_blank" class="btn-primary" style="padding:6px 10px;font-size:12px;">Ler</a>
+                <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" onsubmit="return confirm('Excluir este artigo?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" style="background:#FEE2E2;color:#991B1B;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;">✕</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <h4 style="color:var(--navy-900);font-weight:800;margin-bottom:12px;">Nova Categoria do Blog</h4>
+          <form method="POST" action="{{ url_for('admin.save_category') }}" style="display:flex;gap:10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="name" class="form-control" placeholder="Nome da categoria" required>
+            <button type="submit" class="btn-primary">Criar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ABA 5: USUÁRIOS -->
+    {% if tab == 'usuarios' %}
+    <div class="card-panel">
+      <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:16px;">Usuários Cadastrados no Portal ({{ users|length }})</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        {% for u in users %}
+        <div style="border:1px solid var(--slate-200);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <strong>{{ u.name }}</strong> ({{ u.email }})
+            <span style="font-size:12px;color:var(--slate-500);margin-left:8px;">
+              {{ '🔑 Google OAuth' if u.google_id else '🔒 Login Local' }} | Empresa: {{ u.company or '-' }}
+            </span>
+          </div>
+          <form method="POST" action="{{ url_for('admin.toggle_user_role', user_id=u.id) }}" style="display:flex;gap:8px;align-items:center;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="role" class="form-control" style="padding:6px 10px;font-size:13px;">
+              <option value="client" {% if u.role == 'client' %}selected{% endif %}>Cliente</option>
+              <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Administrador</option>
+            </select>
+            <button type="submit" class="btn-primary" style="padding:7px 14px;font-size:12.5px;">Atualizar</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ABA 6: CONFIGURAÇÕES GERAIS & MODO DE MANUTENÇÃO 503 -->
+    {% if tab == 'configuracoes' %}
+    <div class="card-panel">
+      <h3 style="color:var(--navy-900);font-weight:800;margin-bottom:18px;">⚙️ Configurações Institucionais, Webhook n8n & Modo de Manutenção (SEO 503)</h3>
+      <form method="POST" action="{{ url_for('admin.save_settings') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;padding:20px;border-radius:12px;margin-bottom:24px;">
+          <label style="display:flex;align-items:center;gap:10px;font-weight:800;color:#92400E;font-size:15px;cursor:pointer;">
+            <input type="checkbox" name="maintenance_mode" {% if setting and setting.maintenance_mode %}checked{% endif %} style="width:18px;height:18px;">
+            <span>Ativar Modo de Manutenção Programada (Retorna HTTP 503 para visitantes e preserva SEO no Google)</span>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+            <div>
+              <label class="form-label">Título da Página de Manutenção</label>
+              <input type="text" name="maintenance_title" value="{{ setting.maintenance_title if setting else '' }}" class="form-control">
+            </div>
+            <div>
+              <label class="form-label">Previsão de Retorno</label>
+              <input type="text" name="maintenance_eta" value="{{ setting.maintenance_eta if setting else '' }}" class="form-control">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label class="form-label">Mensagem Explicativa de Manutenção</label>
+            <textarea name="maintenance_message" rows="2" class="form-control">{{ setting.maintenance_message if setting else '' }}</textarea>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Nome do Portal</label>
+            <input type="text" name="site_name" value="{{ setting.site_name if setting else 'Bontech' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Slogan / Subtítulo da Logo</label>
+            <input type="text" name="site_tagline" value="{{ setting.site_tagline if setting else '' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-mail de Atendimento</label>
+            <input type="email" name="contact_email" value="{{ setting.contact_email if setting else '' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefone Exibido</label>
+            <input type="text" name="contact_phone" value="{{ setting.contact_phone if setting else '' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp (apenas dígitos com DDI)</label>
+            <input type="text" name="whatsapp_number" value="{{ setting.whatsapp_number if setting else '' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Endereço / Cidade</label>
+            <input type="text" name="address" value="{{ setting.address if setting else '' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Horário de Funcionamento</label>
+            <input type="text" name="opening_hours" value="{{ setting.opening_hours if setting else '' }}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL do Webhook n8n (Automação de Leads)</label>
+            <input type="url" name="n8n_webhook_url" value="{{ setting.n8n_webhook_url if setting else '' }}" class="form-control" placeholder="https://n8n.bontech.com.br/webhook/...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subtítulo do Hero na Home</label>
+          <textarea name="hero_subtitle" rows="2" class="form-control">{{ setting.hero_subtitle if setting else '' }}</textarea>
+        </div>
+
+        <input type="hidden" name="hero_badge" value="{{ setting.hero_badge if setting else '' }}">
+        <input type="hidden" name="hero_title" value="{{ setting.hero_title if setting else '' }}">
+        <input type="hidden" name="instagram_url" value="{{ setting.instagram_url if setting else '' }}">
+        <input type="hidden" name="linkedin_url" value="{{ setting.linkedin_url if setting else '' }}">
+
+        <button type="submit" class="btn-primary">Salvar Todas as Configurações</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

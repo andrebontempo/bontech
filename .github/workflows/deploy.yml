@@ -1,0 +1,58 @@
+name: CI/CD Pipeline (Deploy Bontech)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-bontech-main
+  cancel-in-progress: true
+
+jobs:
+  code-checks:
+    name: Validação de Sintaxe Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python (v3.12)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar Dependências
+        run: pip install -r requirements.txt
+
+      - name: Compilar e Validar Módulos Python
+        run: python -m compileall app wsgi.py
+
+  deploy:
+    name: Deploy na VPS Hostinger (SSH)
+    needs: code-checks
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Executar Deploy Remoto via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            mkdir -p /opt/docker/bontech
+            cd /opt/docker/bontech
+            if [ ! -f "deploy.sh" ]; then
+              echo "Inicializando repositório Git em /opt/docker/bontech..."
+              git init
+              git config --global --add safe.directory /opt/docker/bontech 2>/dev/null || true
+              git remote add origin https://github.com/andrebontempo/bontech.git 2>/dev/null || git remote set-url origin https://github.com/andrebontempo/bontech.git
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+            chmod +x ./deploy.sh
+            bash ./deploy.sh

@@ -1,1 +1,12 @@
-/data
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+data/
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+*.db
+*.sqlite3
+.DS_Store

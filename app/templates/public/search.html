@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Resultados da Busca: {{ q }} — Bontech{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+  <div class="container">
+    <h1>Resultados da Pesquisa</h1>
+    <p>{% if q %}Exibindo resultados para: <strong>"{{ q }}"</strong>{% else %}Digite um termo para pesquisar em nossos serviços e artigos técnicos.{% endif %}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if services %}
+    <h2 style="color:var(--navy-900);font-weight:800;margin-bottom:20px;">Serviços Encontrados ({{ services|length }})</h2>
+    <div class="services-grid" style="margin-bottom:48px;">
+      {% for service in services %}
+      <article class="service-card">
+        <div class="service-card-body" style="padding:28px;">
+          <h3 class="service-card-title"><a href="{{ url_for('public.service_detail', slug=service.slug) }}">{{ service.title }}</a></h3>
+          <p class="service-card-text">{{ service.short_description }}</p>
+          <a href="{{ url_for('public.service_detail', slug=service.slug) }}" class="service-read-more">Ver serviço →</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if posts %}
+    <h2 style="color:var(--navy-900);font-weight:800;margin-bottom:20px;">Artigos do Blog ({{ posts|length }})</h2>
+    <div class="blog-grid">
+      {% for post in posts %}
+      <article class="blog-card">
+        <div class="blog-card-body">
+          <div class="blog-meta">
+            <span>📁 {{ post.category.name if post.category else 'Blog' }}</span>
+            <span>📅 {{ post.published_at.strftime('%d/%m/%Y') }}</span>
+          </div>
+          <h3 class="blog-card-title"><a href="{{ url_for('blog.post_detail', slug=post.slug) }}">{{ post.title }}</a></h3>
+          <p class="blog-card-summary">{{ post.summary }}</p>
+          <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="btn-cta-pill"><span>Ler artigo</span><span class="arrow-circle">→</span></a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not services and not posts %}
+    <div class="card-panel" style="text-align:center;padding:56px 24px;">
+      <h3 style="color:var(--navy-900);margin-bottom:10px;">Nenhum resultado encontrado para "{{ q }}"</h3>
+      <p style="color:var(--slate-600);margin-bottom:22px;">Tente pesquisar por termos como <strong>GLPi</strong>, <strong>n8n</strong>, <strong>Incidentes</strong>, <strong>Ativos</strong> ou <strong>KCS</strong>.</p>
+      <a href="{{ url_for('public.index') }}" class="btn-primary">Voltar para a Home</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
