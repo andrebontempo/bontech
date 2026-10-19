@@ -26,10 +26,11 @@ fi
 echo "🌐 [3/5] Verificando rede externa Docker proxy..."
 docker network create proxy 2>/dev/null || true
 
-echo "🐳 [4/5] Substituindo containers antigos e subindo Flask + PostgreSQL..."
+echo "🐳 [4/5] Removendo possível container legado do WordPress e subindo Flask + PostgreSQL..."
+docker rm -f bontech_app bontech-app bontech_db bontech-db bontech_wordpress wordpress 2>/dev/null || true
 docker compose down --remove-orphans
 docker compose up -d --build --remove-orphans
 
 echo "===================================================="
-echo "✨ [5/5] Deploy concluído com sucesso!"
+echo "✨ [5/5] Deploy concluído com sucesso! (http://bontech_app:80 na rede proxy)"
 echo "===================================================="

@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: bontech-db
+    container_name: bontech_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-bontech}
@@ -20,7 +20,7 @@ services:
 
   app:
     build: .
-    container_name: bontech-app
+    container_name: bontech_app
     restart: unless-stopped
     ports:
       - "${APP_PORT:-5015}:80"
@@ -39,8 +39,9 @@ services:
       app-network:
       proxy:
         aliases:
-          - bontech
+          - bontech_app
           - bontech-app
+          - bontech
           - bontech_wordpress
           - wordpress
           - bontech_nginx
