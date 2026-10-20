@@ -29,7 +29,7 @@ def run_seed():
     admin_user = User.query.filter_by(email=admin_email).first()
     if not admin_user:
         admin_user = User(
-            name=current_app.config.get("ADMIN_NAME", "André Bontempo"),
+            name=current_app.config.get("ADMIN_NAME", "Humberto Bontempo"),
             email=admin_email,
             phone="+55 61 98427-4022",
             company="Bontech TI & Governança",
@@ -38,6 +38,9 @@ def run_seed():
         )
         admin_user.set_password(current_app.config.get("ADMIN_PASSWORD", "Bontech@2026"))
         db.session.add(admin_user)
+        db.session.flush()
+    elif admin_user.name == "André Bontempo":
+        admin_user.name = "Humberto Bontempo"
         db.session.flush()
 
     # 3. Portfólio Completo dos 6 Serviços de TI da Bontech

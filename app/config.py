@@ -55,7 +55,7 @@ class Config:
     N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
 
     # Administrador Inicial (Seed)
-    ADMIN_NAME = os.getenv("ADMIN_NAME", "André Bontempo")
+    ADMIN_NAME = os.getenv("ADMIN_NAME", "Humberto Bontempo")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "suporte@bontech.com.br")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Bontech@2026")
 
