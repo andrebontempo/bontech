@@ -7,6 +7,3 @@ venv
 .venv
 data
 app/static/uploads/*
-README.md
-DOCUMENTACAO.md
-PRD.md

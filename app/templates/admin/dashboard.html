@@ -50,6 +50,7 @@
       <a href="{{ url_for('admin.dashboard', tab='blog') }}" class="admin-tab-link {% if tab == 'blog' %}active{% endif %}">📝 Blog & KCS ({{ stats.total_posts }})</a>
       <a href="{{ url_for('admin.dashboard', tab='usuarios') }}" class="admin-tab-link {% if tab == 'usuarios' %}active{% endif %}">👥 Usuários ({{ stats.total_users }})</a>
       <a href="{{ url_for('admin.dashboard', tab='configuracoes') }}" class="admin-tab-link {% if tab == 'configuracoes' %}active{% endif %}">⚙️ Configurações & Manutenção 503</a>
+      <a href="{{ url_for('admin.dashboard', tab='documentacao') }}" class="admin-tab-link {% if tab == 'documentacao' %}active{% endif %}">📘 Documentação Interna</a>
     </div>
 
     <!-- ABA 1: VISÃO GERAL -->
@@ -393,6 +394,32 @@
 
         <button type="submit" class="btn-primary">Salvar Todas as Configurações</button>
       </form>
+    </div>
+    {% endif %}
+
+    <!-- ABA 7: DOCUMENTAÇÃO INTERNA (PRIVATIVA AO ADMIN) -->
+    {% if tab == 'documentacao' and internal_docs %}
+    <div class="card-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--slate-200);margin-bottom:24px;">
+        <div>
+          <span class="section-pill" style="margin-bottom:6px;">🔒 Área Técnica Restrita a Administradores</span>
+          <h2 style="color:var(--navy-900);font-weight:800;font-size:22px;">
+            {{ internal_docs[doc_key].label }} <span style="font-size:14px;color:var(--slate-500);font-weight:600;">({{ internal_docs[doc_key].filename }})</span>
+          </h2>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          {% for key, item in internal_docs.items() %}
+          <a href="{{ url_for('admin.dashboard', tab='documentacao', doc=key) }}" class="admin-tab-link {% if doc_key == key %}active{% endif %}">
+            📄 {{ item.filename }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="article-content" style="max-width:960px;">
+        {{ internal_docs[doc_key].html | safe }}
+      </div>
     </div>
     {% endif %}
   </div>

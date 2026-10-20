@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from functools import wraps
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import os
+import markdown
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import User, Service, Category, Post, ConsultationRequest, Setting
@@ -22,11 +24,35 @@ def admin_required(f):
     return decorated_function
 
 
+def _load_internal_docs() -> dict:
+    """Lê e converte os documentos técnicos internos (Markdown -> HTML) exclusivamente para o Admin."""
+    project_root = os.path.abspath(os.path.join(current_app.root_path, ".."))
+    docs_map = {
+        "arquitetura": ("VISAO_GERAL_ESTRUTURA.md", "Arquitetura & Estrutura de Código"),
+        "operacional": ("DOCUMENTACAO.md", "Documentação Técnica & Operacional"),
+        "prd": ("PRD.md", "PRD — Requisitos do Produto"),
+    }
+    result = {}
+    for key, (filename, label) in docs_map.items():
+        filepath = os.path.join(project_root, filename)
+        raw_md = ""
+        if os.path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as f:
+                raw_md = f.read()
+        html = markdown.markdown(
+            raw_md or f"*Arquivo `{filename}` não encontrado.*",
+            extensions=["extra", "fenced_code", "tables", "nl2br"],
+        )
+        result[key] = {"label": label, "filename": filename, "html": html}
+    return result
+
+
 @admin_bp.route("")
 @admin_bp.route("/")
 @admin_required
 def dashboard():
     tab = request.args.get("tab", "visao-geral")
+    doc_key = request.args.get("doc", "arquitetura")
     services = Service.query.order_by(Service.display_order.asc(), Service.id.asc()).all()
     posts = Post.query.order_by(Post.published_at.desc()).all()
     categories = Category.query.order_by(Category.name.asc()).all()
@@ -47,9 +73,15 @@ def dashboard():
         "total_users": len(users),
     }
 
+    internal_docs = _load_internal_docs() if tab == "documentacao" else {}
+    if doc_key not in internal_docs and internal_docs:
+        doc_key = "arquitetura"
+
     return render_template(
         "admin/dashboard.html",
         tab=tab,
+        doc_key=doc_key,
+        internal_docs=internal_docs,
         stats=stats,
         services=services,
         posts=posts,
