@@ -305,14 +305,24 @@
               {{ '🔑 Google OAuth' if u.google_id else '🔒 Login Local' }} | Empresa: {{ u.company or '-' }}
             </span>
           </div>
-          <form method="POST" action="{{ url_for('admin.toggle_user_role', user_id=u.id) }}" style="display:flex;gap:8px;align-items:center;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <select name="role" class="form-control" style="padding:6px 10px;font-size:13px;">
-              <option value="client" {% if u.role == 'client' %}selected{% endif %}>Cliente</option>
-              <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Administrador</option>
-            </select>
-            <button type="submit" class="btn-primary" style="padding:7px 14px;font-size:12.5px;">Atualizar</button>
-          </form>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <form method="POST" action="{{ url_for('admin.toggle_user_role', user_id=u.id) }}" style="display:flex;gap:8px;align-items:center;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="role" class="form-control" style="padding:6px 10px;font-size:13px;">
+                <option value="client" {% if u.role == 'client' %}selected{% endif %}>Cliente</option>
+                <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Administrador</option>
+              </select>
+              <button type="submit" class="btn-primary" style="padding:7px 14px;font-size:12.5px;">Papel</button>
+            </form>
+
+            {% if not u.google_id %}
+            <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=u.id) }}" style="display:flex;gap:8px;align-items:center;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="password" name="new_password" class="form-control" placeholder="Nova senha (Bitwarden)" required minlength="6" style="padding:6px 10px;font-size:13px;min-width:180px;">
+              <button type="submit" style="background:#0F172A;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;">Alterar Senha</button>
+            </form>
+            {% endif %}
+          </div>
         </div>
         {% endfor %}
       </div>

@@ -294,6 +294,22 @@ def toggle_user_role(user_id):
     return redirect(url_for("admin.dashboard", tab="usuarios"))
 
 
+@admin_bp.route("/usuarios/<int:user_id>/senha", methods=["POST"])
+@admin_required
+def reset_user_password(user_id):
+    user = User.query.get_or_404(user_id)
+    new_password = request.form.get("new_password", "").strip()
+
+    if not new_password or len(new_password) < 6:
+        flash("A nova senha deve possuir no mínimo 6 caracteres.", "danger")
+        return redirect(url_for("admin.dashboard", tab="usuarios"))
+
+    user.set_password(new_password)
+    db.session.commit()
+    flash(f"Senha de {user.name} ({user.email}) atualizada com sucesso!", "success")
+    return redirect(url_for("admin.dashboard", tab="usuarios"))
+
+
 # ----------------------------------------------------------------------------
 # Configurações Gerais & Modo de Manutenção Programada (SEO 503)
 # ----------------------------------------------------------------------------
