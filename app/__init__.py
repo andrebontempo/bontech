@@ -131,4 +131,21 @@ def create_app(config_class=Config) -> Flask:
             429,
         )
 
+    @app.cli.command("test-email")
+    def cli_test_email():
+        """Envia um e-mail de teste para validar as credenciais SMTP."""
+        import click
+        from app.utils.mail import send_smtp_direct, build_email_template
+
+        dest = app.config.get("ADMIN_ALERT_EMAIL") or app.config.get("SMTP_USER")
+        click.echo(f"Iniciando teste de envio SMTP para {dest}...")
+        body = "<p>Este é um e-mail de teste disparado pelo comando CLI da <strong>Bontech</strong>.</p>"
+        html = build_email_template(app, "Teste de Conexão SMTP", body)
+        ok, msg = send_smtp_direct(app, dest, "Teste de Envio SMTP — Bontech", html)
+        if ok:
+            click.secho(f"SUCESSO: {msg}", fg="green")
+        else:
+            click.secho(f"FALHA: {msg}", fg="red")
+
     return app
+

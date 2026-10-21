@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import User, Service, Category, Post, ConsultationRequest, Setting
 from app.utils.media import slugify, save_image_as_webp
-from app.utils.mail import send_email
+from app.utils.mail import send_email, send_smtp_direct, build_email_template
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -343,3 +343,29 @@ def save_settings():
     db.session.commit()
     flash("Configurações gerais e modo de manutenção atualizados com sucesso!", "success")
     return redirect(url_for("admin.dashboard", tab="configuracoes"))
+
+
+@admin_bp.route("/configuracoes/testar-email", methods=["POST"])
+@admin_required
+def test_email():
+    target_email = request.form.get("target_email", "").strip() or current_user.email
+    app_obj = current_app._get_current_object()
+    body_html = f"""
+    <p>Olá, <strong>{current_user.name}</strong>!</p>
+    <p>Este é um e-mail de teste disparado manualmente através do painel de administração da <strong>Bontech</strong> para validar as credenciais SMTP da Hostinger.</p>
+    <p>Se você está lendo esta mensagem, o fluxo de envio e autenticação SMTP está 100% funcional!</p>
+    """
+    html_template = build_email_template(app_obj, "Teste de Conexão SMTP", body_html)
+    ok, msg = send_smtp_direct(
+        app_obj,
+        target_email,
+        "🧪 Teste de Conexão SMTP — Bontech",
+        html_template,
+    )
+    if ok:
+        flash(f"✅ {msg}", "success")
+    else:
+        flash(f"❌ {msg}", "danger")
+
+    return redirect(url_for("admin.dashboard", tab="configuracoes"))
+

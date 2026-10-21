@@ -404,6 +404,33 @@
 
         <button type="submit" class="btn-primary">Salvar Todas as Configurações</button>
       </form>
+
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--slate-200);">
+        <h4 style="color:var(--navy-900);font-weight:700;margin-bottom:8px;">📧 Diagnóstico & Teste de Conexão SMTP</h4>
+        <p style="color:var(--slate-600);font-size:14px;margin-bottom:16px;">
+          Valide se o servidor SMTP da Hostinger está autenticando e enviando e-mails com sucesso para os clientes e administradores.
+        </p>
+
+        <div style="background:#F8FAFC;border:1px solid var(--slate-200);border-radius:10px;padding:16px;margin-bottom:20px;font-size:13px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            <div><strong>Host SMTP:</strong> {{ config.SMTP_HOST }}</div>
+            <div><strong>Porta:</strong> {{ config.SMTP_PORT }} ({% if config.SMTP_PORT == 465 %}SSL/TLS{% else %}STARTTLS{% endif %})</div>
+            <div><strong>Usuário Remetente:</strong> {{ config.SMTP_USER }}</div>
+            <div><strong>E-mail de Alerta Admin:</strong> {{ config.ADMIN_ALERT_EMAIL }}</div>
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.test_email') }}" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div style="flex:1;min-width:260px;">
+            <label class="form-label" style="font-size:13px;margin-bottom:4px;">Enviar e-mail de teste para:</label>
+            <input type="email" name="target_email" value="{{ current_user.email }}" class="form-control" required placeholder="seu-email@dominio.com">
+          </div>
+          <button type="submit" class="btn-primary" style="background:#0284C7;border-color:#0284C7;">
+            🧪 Disparar E-mail de Teste
+          </button>
+        </form>
+      </div>
     </div>
     {% endif %}
 

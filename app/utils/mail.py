@@ -1,52 +1,18 @@
+import re
 import smtplib
 import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 import requests
 from flask import current_app
 
 
-def _send_smtp_async(app, to_email: str, subject: str, html_body: str):
-    """Envia e-mail HTML em background via SMTP."""
-    with app.app_context():
-        smtp_host = app.config.get("SMTP_HOST")
-        smtp_port = app.config.get("SMTP_PORT", 465)
-        smtp_user = app.config.get("SMTP_USER")
-        smtp_pass = app.config.get("SMTP_PASS")
-        from_name = app.config.get("SMTP_FROM_NAME", "Bontech TI & Governança")
-
-        if not smtp_host or not smtp_user or not smtp_pass:
-            app.logger.info(
-                f"[SMTP Simulado] Para: {to_email} | Assunto: {subject}"
-            )
-            return
-
-        try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = f"{from_name} <{smtp_user}>"
-            msg["To"] = to_email
-            msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-            if smtp_port == 465:
-                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15) as server:
-                    server.login(smtp_user, smtp_pass)
-                    server.sendmail(smtp_user, [to_email], msg.as_string())
-            else:
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
-                    server.starttls()
-                    server.login(smtp_user, smtp_pass)
-                    server.sendmail(smtp_user, [to_email], msg.as_string())
-        except Exception as exc:
-            app.logger.warning(f"Falha ao enviar e-mail SMTP para {to_email}: {exc}")
-
-
-def send_email(to_email: str, subject: str, title: str, body_html: str):
-    """Formata e dispara e-mail corporativo com a identidade visual Bontech."""
-    app = current_app._get_current_object()
+def build_email_template(app, title: str, body_html: str) -> str:
+    """Gera o HTML corporativo Bontech para o corpo da mensagem."""
     base_url = app.config.get("BASE_URL", "https://bontech.com.br")
 
-    template = f"""
+    return f"""
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head><meta charset="UTF-8"></head>
@@ -81,6 +47,69 @@ def send_email(to_email: str, subject: str, title: str, body_html: str):
     </body>
     </html>
     """
+
+
+def send_smtp_direct(app, to_email: str, subject: str, html_body: str) -> tuple[bool, str]:
+    """Envia e-mail SMTP de forma síncrona, retornando (sucesso, mensagem_ou_erro)."""
+    with app.app_context():
+        smtp_host = app.config.get("SMTP_HOST")
+        smtp_port = app.config.get("SMTP_PORT", 465)
+        smtp_user = app.config.get("SMTP_USER")
+        smtp_pass = app.config.get("SMTP_PASS")
+        from_name = app.config.get("SMTP_FROM_NAME", "Bontech TI & Governança")
+
+        if not smtp_host or not smtp_user or not smtp_pass or smtp_pass == "sua_senha_do_email":
+            msg_simulado = f"[SMTP Simulado] Credenciais SMTP ausentes ou padrão. Para: {to_email} | Assunto: {subject}"
+            app.logger.info(msg_simulado)
+            return False, "Credenciais SMTP não configuradas no arquivo .env (SMTP_PASS está vazio ou com valor padrão)."
+
+        try:
+            port = int(smtp_port)
+        except (ValueError, TypeError):
+            port = 465
+
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = formataddr((from_name, smtp_user))
+            msg["To"] = to_email
+            msg["Reply-To"] = smtp_user
+
+            # Cria versão texto puro a partir do HTML para melhor entregabilidade (anti-spam)
+            clean_text = re.sub(r"<[^>]+>", " ", html_body)
+            clean_text = "\n".join(
+                line.strip() for line in clean_text.splitlines() if line.strip()
+            )
+            msg.attach(MIMEText(clean_text, "plain", "utf-8"))
+            msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+            if port == 465:
+                with smtplib.SMTP_SSL(smtp_host, port, timeout=15) as server:
+                    server.login(smtp_user, smtp_pass)
+                    server.sendmail(smtp_user, [to_email], msg.as_string())
+            else:
+                with smtplib.SMTP(smtp_host, port, timeout=15) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_pass)
+                    server.sendmail(smtp_user, [to_email], msg.as_string())
+
+            app.logger.info(f"E-mail enviado com sucesso via SMTP para {to_email}")
+            return True, f"E-mail enviado com sucesso para {to_email} via {smtp_host}:{port}."
+        except Exception as exc:
+            erro_msg = f"Falha ao enviar e-mail SMTP para {to_email}: {exc}"
+            app.logger.error(erro_msg, exc_info=True)
+            return False, erro_msg
+
+
+def _send_smtp_async(app, to_email: str, subject: str, html_body: str):
+    """Envia e-mail em background via SMTP."""
+    send_smtp_direct(app, to_email, subject, html_body)
+
+
+def send_email(to_email: str, subject: str, title: str, body_html: str):
+    """Formata e dispara e-mail corporativo assíncrono com a identidade visual Bontech."""
+    app = current_app._get_current_object()
+    template = build_email_template(app, title, body_html)
     thread = threading.Thread(
         target=_send_smtp_async, args=(app, to_email, subject, template), daemon=True
     )
